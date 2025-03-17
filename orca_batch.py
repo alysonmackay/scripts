@@ -14,7 +14,7 @@ submit_slurm = True  # control sbatch
 
 orca_variables = {
     "method": "B3LYP",
-    "basis": "def2-TZVP def2/J",
+    "basis": "def2-TZVP def2/JK",
     "charge": 0,
     "mult": 1,
     "other": "RIJK D3BJ NormalPrint",
