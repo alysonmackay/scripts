@@ -78,8 +78,9 @@ echo "Job Complete!" \n"""
 for xyz_filename in xyz_files:
     generate_slurm_script(slurm_sub)
     slurm_scripts_generated += 1
+    if submit_slurm:
+    	os.system('sbatch {slurm_sub}')
 if submit_slurm:
-    os.system('sbatch {slurm_sub}')
     print(f"{slurm_scripts_generated} SLURM submit scripts generated and launched successfully")
 else:
     print(f"{slurm_scripts_generated} SLURM submit scripts generated successfully")
