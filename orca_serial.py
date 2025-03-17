@@ -32,7 +32,7 @@ def generate_orca_input(filename, xyz_filename):
     Generates an ORCA input file using the common settings, referencing an XYZ file.
     """
     input_content = f"""# {input_comment}
-%pal nprocs {slurm_settings['ntasks']}
+%pal nprocs {slurm_settings['ntasks']} end
 ! {common_settings['method']} {common_settings['basis']} {common_settings['extra_options']}
 
 * xyzfile {common_settings['charge']} {common_settings['multiplicity']} {xyz_filename}\n"""
