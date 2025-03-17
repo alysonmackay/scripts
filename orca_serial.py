@@ -1,12 +1,8 @@
 import os
 
-# script for creating and submitting serial ORCA inputs
-
-# suffix and universal input comment 
 suffix = "_test"
 input_comment = "this is a test"
 
-# list of XYZ files
 xyz_files = ["tmpd_i_opt.xyz", "tmpd_f_opt.xyz"]
 
 # define common variables 
