@@ -1,27 +1,33 @@
 import os
- 
-suffix = "_test" # job type 
-input_comment = "this is a test"
 
-xyz_files = ["tmpd_i_opt.xyz", "tmpd_f_opt.xyz"]
+suffix = "_guess"  # job type
+input_comment = "DFT guess orbitals "
 
-submit_slurm = True # control sbatch
- 
+xyz_files = [
+    "stack_sq_neut_0.xyz",
+    "TEMPO_CuBr2_0.xyz",
+    "abno_CuCl2_0.xyz",
+    "abno_CuBr2_0.xyz",
+]
+
+submit_slurm = True  # control sbatch
+
 orca_variables = {
-        "method": "B3LYP",
-        "basis": "def2-TZVP",
-        "charge": 0,
-        "mult": 1,
-        "other": "TightSCF NormalPrint",
-	"block": "",
+    "method": "B3LYP",
+    "basis": "def2-TZVP def2/J",
+    "charge": 0,
+    "mult": 1,
+    "other": "RIJK D3BJ NormalPrint",
+    "block": "",
 }
 
 slurm_variables = {
-        "ntasks": 4,
-	"mem": 12,
-	"time": "00-12:00",
-	"path": "$HOME/scratch",
+    "ntasks": 8,
+    "mem": 64,
+    "time": "00-06:00",
+    "path": "$HOME/scratch/copper/side-on",
 }
+
 
 def generate_orca_input(filename, xyz_filename):
     input_content = f"""# {input_comment}
@@ -32,30 +38,17 @@ end
 
 * xyzfile {orca_variables['charge']} {orca_variables['mult']} {xyz_filename}\n"""
 
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         f.write(input_content)
 
-input_files_generated = 0
-
-# generating orca input files 
-for xyz_filename in xyz_files:
-    base_name = xyz_filename.split('.')[0]
-    input_filename = f"{base_name}{suffix}.inp"
-    slurm_sub = f"{base_name}_sub.sh"
-    
-    generate_orca_input(input_filename, xyz_filename)
-    input_files_generated += 1
-print(f"{input_files_generated} ORCA input files generated successfully.") 
-
-slurm_scripts_generated = 0
 
 def generate_slurm_script(filename):
-	slurm_content = f"""#!/bin/bash
+    slurm_content = f"""#!/bin/bash
 #
 #
 #SBATCH --nodes=1
 #SBATCH --ntasks={slurm_variables['ntasks']}
-#SBATCH --mem={slurm_variables['mem']}
+#SBATCH --mem={slurm_variables['mem']}GB
 #SBATCH --time={slurm_variables['time']}
 #SBATCH --job-name={input_filename}
 #
@@ -69,18 +62,40 @@ $EBROOTORCA/orca {slurm_variables['path']}/{input_filename} > {slurm_variables['
 rm -fr /tmp/$USER
 seff $SLURM_JOBID
 
-echo "Job Complete!" \n""" 
+echo "Job Complete!" \n"""
 
-	with open(filename, 'w') as f:
-		f.write(slurm_content)
+    with open(filename, "w") as f:
+        f.write(slurm_content)
 
-# generating and launching SLURM batch scripts 
+
+input_files_generated = 0
+
+# generating orca input files
 for xyz_filename in xyz_files:
+    base_name = xyz_filename.split(".")[0]
+    input_filename = f"{base_name}{suffix}.inp"
+
+    generate_orca_input(input_filename, xyz_filename)
+    input_files_generated += 1
+
+print(f"{input_files_generated} ORCA input files generated successfully.")
+
+slurm_scripts_generated = 0
+
+# generating and launching SLURM batch scripts
+for xyz_filename in xyz_files:
+    base_name = xyz_filename.split(".")[0]
+    input_filename = f"{base_name}{suffix}.inp"
+    slurm_sub = f"{base_name}_sub.sh"
+
     generate_slurm_script(slurm_sub)
     slurm_scripts_generated += 1
     if submit_slurm:
-    	os.system('sbatch {slurm_sub}')
+        os.system(f"sbatch {slurm_sub}")
+
 if submit_slurm:
-    print(f"{slurm_scripts_generated} SLURM submit scripts generated and launched successfully")
+    print(
+        f"{slurm_scripts_generated} SLURM submit scripts generated and launched successfully"
+    )
 else:
     print(f"{slurm_scripts_generated} SLURM submit scripts generated successfully")
